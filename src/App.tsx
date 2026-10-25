@@ -4,6 +4,10 @@ import {
   ChevronDown,
   ChevronRight,
   CircleCheck,
+  ReceiptText,
+  ChefHat,
+  Bike,
+  PackageCheck,
   Clock3,
   Filter,
   Heart,
@@ -55,6 +59,7 @@ function App() {
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
   const [cartPage, setCartPage] = useState(() => window.location.hash === '#cart');
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [trackingPage, setTrackingPage] = useState(() => window.location.hash === '#track-order');
   const [checkoutPage, setCheckoutPage] = useState(() => window.location.hash === '#checkout');
   const [vegOnly, setVegOnly] = useState(false);
   const [sort, setSort] = useState('popular');
@@ -68,10 +73,11 @@ function App() {
       setFullMenu(isMenu);
       setCartPage(window.location.hash === '#cart');
       setCheckoutPage(window.location.hash === '#checkout');
+      setTrackingPage(window.location.hash === '#track-order');
       setMobileMenu(false);
       if (isMenu) { setCategory('All Items'); setSearch(''); setVegOnly(false); setSort('popular'); }
       requestAnimationFrame(() => {
-        if (isMenu || window.location.hash === '#cart' || window.location.hash === '#checkout') window.scrollTo({ top: 0, behavior: 'instant' });
+        if (isMenu || window.location.hash === '#cart' || window.location.hash === '#checkout' || window.location.hash === '#track-order') window.scrollTo({ top: 0, behavior: 'instant' });
         else document.getElementById(window.location.hash.slice(1) || 'top')?.scrollIntoView();
       });
     };
@@ -107,15 +113,15 @@ function App() {
     <div className="app-shell">
       <div className="topline"><span><Clock3 size={14} /> Open today 11:00 AM – 11:00 PM</span><span className="topline-note">Free delivery on orders above ₹499</span></div>
       <header className="site-header">
-        <a className="brand" href="#top" aria-label="Lajawab Shawarma home"><img src={logo} alt="Lajawab Shawarma logo" /></a>
+        <a className="brand" href="#top" aria-label="Lajawab Shawarma home"><img src="/images/lajawab-wordmark.png" alt="Lajawab Shawarma" /></a>
         <nav className={mobileMenu ? 'main-nav is-open' : 'main-nav'}>
           <a href="#top" onClick={() => setMobileMenu(false)}>Home</a><a href="#full-menu" aria-current={fullMenu ? 'page' : undefined} onClick={() => setMobileMenu(false)}>Full Menu</a><a href="#bestsellers" onClick={() => setMobileMenu(false)}>Bestsellers</a><a href="#about" onClick={() => setMobileMenu(false)}>About us</a><a href="#contact" onClick={() => setMobileMenu(false)}>Contact</a>
         </nav>
-        <div className="header-actions"><button className="icon-button search-toggle" aria-label="Focus search" onClick={scrollToMenu}><Search size={20} /></button><button className="cart-button" onClick={() => window.location.hash = 'cart'}><ShoppingBag size={19} /><span>Cart</span>{cartCount > 0 && <b>{cartCount}</b>}</button><button className="header-order" onClick={scrollToMenu}>Order now <ArrowRight size={16} /></button><button className="mobile-menu-button" aria-label="Open menu" onClick={() => setMobileMenu(!mobileMenu)}>{mobileMenu ? <X /> : <SlidersHorizontal />}</button></div>
+        <div className="header-actions"><button className="icon-button search-toggle" aria-label="Focus search" onClick={scrollToMenu}><Search size={20} /></button><button className="cart-button" onClick={() => window.location.hash = 'cart'}><ShoppingBag size={19} /><span>Cart</span>{cartCount > 0 && <b>{cartCount}</b>}</button><button className="header-order" onClick={scrollToMenu}>Order now <ArrowRight size={16} /></button><button className="mobile-menu-button" aria-label="Open menu" onClick={() => setMobileMenu(!mobileMenu)}>{mobileMenu ? <X /> : <SlidersHorizontal />}</button><a className="header-track-order" href="#track-order" aria-current={trackingPage ? 'page' : undefined} onClick={() => setMobileMenu(false)}>Track order</a></div>
       </header>
 
       <main id="top">
-        {checkoutPage ? <CheckoutPage cart={cart} subtotal={subtotal} /> : cartPage ? <CartPage cart={cart} subtotal={subtotal} delivery={delivery} total={total} onBrowse={scrollToMenu} onChange={changeQuantity} onCheckout={() => { window.location.hash = 'checkout'; }} /> : <>
+        {trackingPage ? <TrackOrderPage /> : checkoutPage ? <CheckoutPage cart={cart} subtotal={subtotal} onPlaced={() => setCart([])} /> : cartPage ? <CartPage cart={cart} subtotal={subtotal} delivery={delivery} total={total} onBrowse={scrollToMenu} onChange={changeQuantity} onCheckout={() => { window.location.hash = 'checkout'; }} /> : <>
         {!fullMenu && <><section className="hero-section">
           <div className="hero-copy"><p className="eyebrow">Street food, made special</p><h1>Big flavours.<br /><em>Fresh bites.</em><br />Lajawab delights.</h1><p className="hero-text">Explore your favourites, discover delicious combinations, and order your next meal in just a few clicks.</p><div className="hero-actions"><button className="primary-button" onClick={scrollToMenu}>Explore full menu <ArrowRight size={17} /></button><button className="text-button" onClick={() => { setCategory('Combos'); scrollToMenu(); }}>See today’s offers <ChevronRight size={17} /></button></div><div className="hero-proof"><div className="avatars"><span>R</span><span>S</span><span>A</span></div><div><div className="stars"><Star size={14} fill="currentColor" /> <strong>4.8/5</strong></div><small>Loved by 2,000+ foodies</small></div></div></div>
           <div className="hero-visual"><div className="hero-image-wrap"><img src={heroImage} alt="Fresh shawarma wrap with fries" /></div><div className="hero-stamp"><span>100%</span><strong>Fresh<br />daily</strong></div></div>
@@ -157,45 +163,32 @@ function CartPage({ cart, subtotal, delivery, total, onBrowse, onChange, onCheck
   return <section className="cart-page"><a className="text-button menu-back" href="#full-menu">← Continue shopping</a><div className="cart-page-panel"><div className="drawer-header"><div><p className="eyebrow">Your order</p><h2>Your cart <span>{cart.reduce((sum, item) => sum + item.quantity, 0)}</span></h2></div><button className="secondary-button" onClick={onBrowse}>Browse menu</button></div>{cart.length === 0 ? <div className="cart-empty"><ShoppingBag size={38} /><h3>Your cart is waiting</h3><p>Add something delicious and it will appear here.</p><button className="primary-button" onClick={onBrowse}>Browse menu</button></div> : <><div className="cart-items">{cart.map((item) => <div className="cart-item" key={item.id}><img src={item.image} alt="" /><div className="cart-item-copy"><h3>{item.name}</h3><span>₹{item.price}</span><div className="quantity-controls"><button onClick={() => onChange(item.id, -1)}><Minus size={13} /></button><strong>{item.quantity}</strong><button onClick={() => onChange(item.id, 1)}><Plus size={13} /></button></div></div><strong className="item-total">₹{item.price * item.quantity}</strong></div>)}</div><div className="cart-summary"><div><span>Subtotal</span><strong>₹{subtotal}</strong></div><div><span>Delivery</span><strong>{delivery ? `₹${delivery}` : 'Free'}</strong></div>{delivery > 0 && <small>Add ₹{500 - subtotal} more for free delivery</small>}<div className="summary-total"><span>Total</span><strong>₹{total}</strong></div><button className="primary-button full-button" onClick={onCheckout}>Go to checkout <ArrowRight size={17} /></button></div></>}</div></section>;
 }
 
-function CheckoutPage({ cart, subtotal }: { cart: CartItem[]; subtotal: number }) {
+function CheckoutPage({ cart, subtotal, onPlaced }: { cart: CartItem[]; subtotal: number; onPlaced: () => void }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
   const [orderType, setOrderType] = useState<'delivery' | 'takeaway'>('delivery');
-  const [step, setStep] = useState<'details' | 'review' | 'saved'>('details');
+  const [placed, setPlaced] = useState(false);
   const [saveError, setSaveError] = useState('');
   const delivery = orderType === 'takeaway' || subtotal > 499 || subtotal === 0 ? 0 : 40;
   const total = subtotal + delivery;
-  const orderText = [
-    'Lajawab Shawarma — order summary',
-    'Saved summary only. This order has not been sent to the restaurant.',
-    'Name: ' + name.trim(), 'Phone: ' + phone.trim(),
-    'Order type: ' + orderType,
-    ...(orderType === 'delivery' ? ['Address: ' + address.trim()] : []),
-    ...cart.map((item) => item.quantity + ' × ' + item.name + ' — ₹' + item.price * item.quantity),
-    'Subtotal: ₹' + subtotal, 'Delivery: ₹' + delivery, 'Total: ₹' + total,
-    ...(notes.trim() ? ['Notes: ' + notes.trim()] : []),
-  ].join('\n');
-  const downloadSummary = () => {
-    const url = URL.createObjectURL(new Blob([orderText], { type: 'text/plain;charset=utf-8' }));
-    const link = document.createElement('a');
-    link.href = url; link.download = 'lajawab-order-summary.txt'; link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  };
-  const saveSummary = () => {
+  const placeOrder = () => {
+    if (placed || !cart.length) return;
     try {
-      localStorage.setItem('lajawab-order-summary', JSON.stringify({ name: name.trim(), phone: phone.trim(), address: orderType === 'delivery' ? address.trim() : '', notes: notes.trim(), orderType, items: cart, subtotal, delivery, total, savedAt: new Date().toISOString() }));
-      setSaveError(''); setStep('saved');
-    } catch { setSaveError('Could not save in this browser. You can download your summary instead.'); }
+      localStorage.setItem('lajawab-order-summary', JSON.stringify({ name: name.trim(), phone: phone.trim(), address: orderType === 'delivery' ? address.trim() : '', notes: notes.trim(), orderType, items: cart, subtotal, delivery, total, status: 'local', trackingStage: 0, orderId: 'LJ-' + Date.now().toString(36).toUpperCase(), savedAt: new Date().toISOString() }));
+      setSaveError(''); setPlaced(true); onPlaced();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch { setSaveError('Could not save your order in this browser. Please try again.'); }
   };
+  if (placed) return <section className="cart-page"><div className="cart-page-panel order-success" role="status" aria-live="polite"><div className="success-tick-scene" aria-hidden="true"><div className="success-tick-shadow" /><div className="success-tick-medallion"><div className="success-tick-face"><svg viewBox="0 0 64 64" fill="none"><path d="M17 33L27 43L48 21" /></svg></div></div></div><h1>Order placed successfully!</h1><p className="order-thanks">Thanks for ordering</p><p className="order-local-note">Your order is saved on this device. Restaurant submission is not connected yet.</p><div className="success-actions"><a className="primary-button" href="#track-order">Track order <ArrowRight size={17} /></a><a className="secondary-button" href="#full-menu">Back to menu</a></div></div></section>;
   if (!cart.length) return <section className="cart-page"><div className="cart-page-panel cart-empty"><ShoppingBag size={38} /><h2>Your cart is empty</h2><p>Add an item before checking out.</p><a className="primary-button" href="#full-menu">Browse menu</a></div></section>;
   return <section className="cart-page checkout-page">
     <a className="text-button menu-back" href="#cart">← Back to cart</a>
-    <nav className="checkout-steps" aria-label="Order progress"><a href="#cart">1. Cart</a><button aria-current={step === 'details' ? 'step' : undefined} onClick={() => setStep('details')}>2. Details</button><span aria-current={step !== 'details' ? 'step' : undefined}>3. Review</span></nav>
+    <nav className="checkout-steps" aria-label="Order progress"><a href="#cart">1. Cart</a><span aria-current="step">2. Checkout</span></nav>
     <div className="checkout-layout"><div className="cart-page-panel">
-      <div className="checkout-heading"><img src={logo} alt="Lajawab Shawarma logo" /><div><p className="eyebrow">Checkout</p><h2>{step === 'details' ? 'Your details' : step === 'review' ? 'Review your order' : 'Summary saved'}</h2></div></div>
-      {step === 'details' ? <form onSubmit={(event) => { event.preventDefault(); setStep('review'); }}>
+      <div className="checkout-heading"><img src={logo} alt="Lajawab Shawarma logo" /><div><p className="eyebrow">Checkout</p><h2>Your details</h2></div></div>
+      <form onSubmit={(event) => { event.preventDefault(); placeOrder(); }}>
         <div className="checkout-form">
           <label>Full name<input required minLength={2} maxLength={100} autoComplete="name" value={name} onChange={(event) => { setName(event.target.value); event.target.setCustomValidity(event.target.value.trim().length < 2 ? "Please enter your full name." : ""); }} placeholder="Your name" /></label>
           <label>Mobile number<input required type="tel" inputMode="tel" autoComplete="tel-national" pattern="[6-9][0-9]{9}" title="Enter a valid 10-digit Indian mobile number" maxLength={10} value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="10-digit mobile number" /></label>
@@ -204,18 +197,42 @@ function CheckoutPage({ cart, subtotal }: { cart: CartItem[]; subtotal: number }
           {orderType === 'takeaway' && <p className="wide-field">Collect your food from the restaurant. No delivery charge applies.</p>}
           <label className="wide-field">Order notes (optional)<textarea maxLength={500} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Any special requests?" rows={2} /></label>
         </div>
-        <button type="submit" className="primary-button full-button">Review order <ArrowRight size={17} /></button>
-      </form> : <div className="checkout-review">
-        {step === 'saved' && <p role="status"><CircleCheck size={24} /> Your order summary is saved on this device.</p>}
-        <h3>{name}</h3><p>{phone}</p><p><strong>{orderType === 'delivery' ? 'Delivery address' : 'Takeaway'}</strong></p>{orderType === 'delivery' && <p className="checkout-address">{address}</p>}{notes.trim() && <p>Notes: {notes}</p>}
-        <button className="text-button" onClick={() => setStep('details')}>Edit details</button>
-        <p className="checkout-service-note">Online ordering and payment are not connected yet. Save or download this summary; it will not send an order or charge you.</p>
+        <p className="checkout-service-note">Your order will be saved on this device. Restaurant submission and online payment are not connected yet.</p>
         {saveError && <p role="alert">{saveError}</p>}
-        {step !== 'saved' && <button className="primary-button full-button" onClick={saveSummary}>Save order summary <ArrowRight size={17} /></button>}
-        <button className="secondary-button full-button" onClick={downloadSummary}>Download summary</button>
-      </div>}
+        <button type="submit" className="primary-button full-button">Place order <ArrowRight size={17} /></button>
+      </form>
     </div><aside className="cart-page-panel checkout-order" aria-label="Order summary"><h2>Order summary</h2><a className="text-button" href="#cart">Edit cart</a>{cart.map((item) => <div className="checkout-order-item" key={item.id}><span>{item.quantity} × {item.name}</span><strong>₹{item.price * item.quantity}</strong></div>)}<div className="cart-summary"><div><span>Subtotal</span><strong>₹{subtotal}</strong></div><div><span>{orderType === 'takeaway' ? 'Takeaway' : 'Delivery'}</span><strong>{delivery ? '₹' + delivery : 'Free'}</strong></div><div className="summary-total" aria-live="polite"><span>Total</span><strong>₹{total}</strong></div></div></aside></div>
   </section>;
+}
+
+type TrackedOrder = { orderId?: string; trackingStage?: number; items: CartItem[]; total: number; orderType: string; savedAt: string };
+
+function TrackOrderPage() {
+  const [order, setOrder] = useState<TrackedOrder | null>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('lajawab-order-summary') || 'null');
+      return saved && Array.isArray(saved.items) && saved.items.length && typeof saved.total === 'number' ? saved : null;
+    } catch { return null; }
+  });
+  const [error, setError] = useState('');
+  const stage = Number.isInteger(order?.trackingStage) ? Math.max(0, Math.min(3, order!.trackingStage!)) : 0;
+  const stages = ['Order received', 'Being prepared', order?.orderType === 'takeaway' ? 'Ready for pickup' : 'Out for delivery', order?.orderType === 'takeaway' ? 'Collected' : 'Delivered'];
+  const stageIllustrations = [<ReceiptText key="received" />, <ChefHat key="preparing" />, <Bike key="delivery" />, <PackageCheck key="delivered" />];
+  const descriptions = ['Your order details have been recorded.', 'Your food is being freshly prepared.', order?.orderType === 'takeaway' ? 'Your food is ready to collect.' : 'Your food is on its way to you.', order?.orderType === 'takeaway' ? 'Your order has been collected. Enjoy your meal!' : 'Your order has arrived. Enjoy your meal!'];
+  const advanceDemo = () => {
+    if (!order || stage === 3) return;
+    const updated = { ...order, trackingStage: stage + 1 };
+    try { localStorage.setItem('lajawab-order-summary', JSON.stringify(updated)); setOrder(updated); setError(''); }
+    catch { setError('Could not save the tracking update. Please try again.'); }
+  };
+  if (!order) return <section className="cart-page"><div className="cart-page-panel cart-empty"><ShoppingBag size={42} /><h1>No order to track yet</h1><p>Place an order to see its progress here.</p><a className="primary-button" href="#full-menu">Browse menu</a></div></section>;
+  return <section className="cart-page tracking-page"><a className="text-button menu-back" href="#full-menu">← Back to menu</a><div className="cart-page-panel">
+    <p className="eyebrow">Track order</p><h1>Your order’s journey</h1><p className="tracking-reference">{order.orderId || 'Your latest order'} · {order.orderType === 'takeaway' ? 'Takeaway' : 'Delivery'}</p>
+    <div className="tracking-current" role="status" aria-live="polite"><span className="tracking-current-icon" aria-hidden="true">{stageIllustrations[stage]}</span><div><h2>{stages[stage]}</h2><p>{descriptions[stage]}</p></div></div>
+    <ol className="tracking-timeline" aria-label="Order progress">{stages.map((label, index) => <li key={label} className={index < stage ? 'complete' : index === stage ? 'current' : ''} aria-current={index === stage ? 'step' : undefined}><div className="tracking-illustration" aria-hidden="true">{stageIllustrations[index]}</div><div><h3>{label}</h3><span>{index < stage ? 'Completed' : index === stage ? 'Current status' : 'Upcoming'}</span></div></li>)}</ol>
+    <div className="tracking-demo"><strong>Demo tracking</strong><p>This order is stored on your device. Statuses are not connected to the restaurant or a delivery service.</p>{stage < 3 ? <button className="secondary-button" onClick={advanceDemo}>Preview next status: {stages[stage + 1]}</button> : <p>Demo complete. Thanks for ordering!</p>}{error && <p role="alert">{error}</p>}</div>
+    <div className="tracking-details"><h2>Order details</h2>{order.items.map((item) => <div className="checkout-order-item" key={item.id}><span>{item.quantity} × {item.name}</span><strong>₹{item.price * item.quantity}</strong></div>)}<div className="checkout-order-item"><span>Total</span><strong>₹{order.total}</strong></div></div>
+  </div></section>;
 }
 
 export default App;

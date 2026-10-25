@@ -1,0 +1,16 @@
+{
+  "tool": "Built-in image_gen",
+  "transparent_background": true,
+  "files": [
+    "received.png",
+    "preparing.png",
+    "delivery.png",
+    "delivered.png"
+  ],
+  "prompts": [
+    "Use case: stylized-concept. Asset type: PNG illustration for a restaurant order tracking stage. Subject: a cream paper order receipt with a large green checkmark, beside a tiny wrapped shawarma. Style: polished playful soft 3D clay illustration, warm ivory, burgundy red #9f1d22 and muted green palette. Centered isolated single composition, square framing, generous padding, all objects fully in frame. Transparent background. No text, letters, logos or watermark. Match a warm cream and burgundy shawarma restaurant website.",
+    "Use case: stylized-concept. Asset type: PNG illustration for a restaurant order tracking stage. Subject: a friendly chef in a white toque and burgundy apron preparing a shawarma wrap on a wooden board. Style: polished playful soft 3D clay illustration, warm ivory, burgundy red #9f1d22 and muted green palette. Centered isolated single composition, square framing, generous padding, all objects fully in frame. Transparent background. No text, letters, logos or watermark. Match a warm cream and burgundy shawarma restaurant website.",
+    "Use case: stylized-concept. Asset type: PNG illustration for a restaurant order tracking stage. Subject: a cheerful delivery rider on a burgundy scooter with a cream insulated food delivery box. Style: polished playful soft 3D clay illustration, warm ivory, burgundy red #9f1d22 and muted green palette. Centered isolated single composition, square framing, generous padding, all objects fully in frame. Transparent background. No text, letters, logos or watermark. Match a warm cream and burgundy shawarma restaurant website.",
+    "Use case: stylized-concept. Asset type: PNG illustration for a restaurant order tracking stage. Subject: a cream takeaway bag with a wrapped shawarma and a large green completion checkmark. Style: polished playful soft 3D clay illustration, warm ivory, burgundy red #9f1d22 and muted green palette. Centered isolated single composition, square framing, generous padding, all objects fully in frame. Transparent background. No text, letters, logos or watermark. Match a warm cream and burgundy shawarma restaurant website."
+  ]
+}
